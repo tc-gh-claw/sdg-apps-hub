@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>零浪費飲食規劃師 - Zero Waste Meal Planner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #84cc16 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+        .header h1 { font-size: 2rem; font-weight: 800; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .sdg-badges {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .sdg-badge {
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #d97706;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: white;
+            padding: 20px 10px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .stat-box.green {
+            background: linear-gradient(135deg, #84cc16 0%, #65a30d 100%);
+        }
+        .stat-box.blue {
+            background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+        }
+        .stat-number { font-size: 1.8rem; font-weight: 800; }
+        .stat-label { font-size: 0.8rem; opacity: 0.9; }
+        .meal-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        .meal-card {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 15px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+        .meal-card:hover { transform: translateY(-3px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .meal-card.selected { border-color: #f59e0b; background: #fffbeb; }
+        .meal-icon { font-size: 2rem; margin-bottom: 8px; }
+        .meal-name { font-weight: 700; color: #92400e; font-size: 0.95rem; }
+        .meal-cal { font-size: 0.8rem; color: #a16207; }
+        .meal-waste { font-size: 0.75rem; color: #16a34a; margin-top: 5px; }
+        .day-selector {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .day-btn {
+            min-width: 60px;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 12px;
+            background: #f3f4f6;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .day-btn:hover { background: #e5e7eb; }
+        .day-btn.active {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+            color: white;
+        }
+        .day-btn.completed { border: 2px solid #22c55e; }
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #4b5563;
+            margin: 20px 0 10px 0;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+            border-radius: 6px;
+            transition: width 0.5s;
+        }
+        .action-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        .action-btn:hover { opacity: 0.9; }
+        .tip-box {
+            background: linear-gradient(135deg, #ecfccb 0%, #d9f99d 100%);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 4px solid #84cc16;
+        }
+        .tip-title { font-weight: 700; color: #3f6212; margin-bottom: 5px; }
+        .tip-text { color: #4d7c0f; font-size: 0.9rem; }
+        .impact-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f0fdf4;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+        .impact-icon { font-size: 2rem; }
+        .impact-content { flex: 1; }
+        .impact-title { font-weight: 700; color: #166534; }
+        .impact-value { font-size: 1.3rem; font-weight: 800; color: #16a34a; }
+        .hidden { display: none; }
+        .page { display: none; }
+        .page.active { display: block; }
+        .nav-bar {
+            display: flex;
+            justify-content: space-around;
+            background: white;
+            padding: 10px;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .nav-item {
+            text-align: center;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        .nav-item:hover { background: #fef3c7; }
+        .nav-item.active { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: white; }
+        .nav-icon { font-size: 1.5rem; display: block; margin-bottom: 5px; }
+        .nav-label { font-size: 0.8rem; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div style="font-size: 3rem;">🥗🌍</div>
+            <h1>零浪費飲食規劃師</h1>
+            <p>健康飲食 × 零浪費生活</p>
+            <div class="sdg-badges">
+                <span class="sdg-badge">SDG 3: 良好健康</span>
+                <span class="sdg-badge">SDG 12: 責任消費</span>
+                <span class="sdg-badge">SDG 2: 零飢餓</span>
+            </div>
+        </div>
+
+        <!-- 主頁：週計劃 -->
+        <div id="page-plan" class="page active">
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-number" id="weekly-calories">0</div>
+                    <div class="stat-label">本週熱量</div>
+                </div>
+                <div class="stat-box green">
+                    <div class="stat-number" id="waste-saved">0</div>
+                    <div class="stat-label">節省食材(kg)</div>
+                </div>
+                <div class="stat-box blue">
+                    <div class="stat-number" id="healthy-days">0</div>
+                    <div class="stat-label">健康天數</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📅 選擇日期</div>
+                <div class="day-selector" id="day-selector"></div>
+                
+                <div class="section-title">早餐選擇</div>
+                <div class="meal-grid" id="breakfast-options"></div>
+                
+                <div class="section-title">午餐選擇</div>
+                <div class="meal-grid" id="lunch-options"></div>
+                
+                <div class="section-title">晚餐選擇</div>
+                <div class="meal-grid" id="dinner-options"></div>
+
+                <div class="tip-box">
+                    <div class="tip-title">💡 零浪費小貼士</div>
+                    <div class="tip-text" id="daily-tip">選擇當季食材可減少 40% 碳足跡！</div>
+                </div>
+
+                <button class="action-btn" onclick="saveDayPlan()">💾 保存今日計劃</button>
+            </div>
+        </div>
+
+        <!-- 統計頁 -->
+        <div id="page-stats" class="page">
+            <div class="card">
+                <div class="card-title">📊 你的永續影響力</div>
+                <div class="impact-card">
+                    <div class="impact-icon">🍎</div>
+                    <div class="impact-content">
+                        <div class="impact-title">健康飲食達成</div>
+                        <div class="impact-value" id="stat-healthy-meals">0 餐</div>
+                    </div>
+                </div>
+                <div class="impact-card">
+                    <div class="impact-icon">♻️</div>
+                    <div class="impact-content">
+                        <div class="impact-title">減少食物浪費</div>
+                        <div class="impact-value" id="stat-waste-reduced">0 kg</div>
+                    </div>
+                </div>
+                <div class="impact-card">
+                    <div class="impact-icon">🌱</div>
+                    <div class="impact-content">
+                        <div class="impact-title">CO₂ 減排量</div>
+                        <div class="impact-value" id="stat-co2-saved">0 kg</div>
+                    </div>
+                </div>
+                <div class="impact-card">
+                    <div class="impact-icon">💰</div>
+                    <div class="impact-content">
+                        <div class="impact-title">節省開支</div>
+                        <div class="impact-value" id="stat-money-saved">$0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🏆 成就徽章</div>
+                <div id="achievements" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+            </div>
+        </div>
+
+        <!-- 零浪費技巧頁 -->
+        <div id="page-tips" class="page">
+            <div class="card">
+                <div class="card-title">🌟 零浪費飲食技巧</div>
+                <div id="tips-list"></div>
+            </div>
+        </div>
+
+        <!-- 底部導航 -->
+        <div class="nav-bar">
+            <div class="nav-item active" onclick="showPage('page-plan')">
+                <span class="nav-icon">📅</span>
+                <span class="nav-label">計劃</span>
+            </div>
+            <div class="nav-item" onclick="showPage('page-stats')">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">統計</span>
+            </div>
+            <div class="nav-item" onclick="showPage('page-tips')">
+                <span class="nav-icon">💡</span>
+                <span class="nav-label">技巧</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 餐點數據庫 - 健康且零浪費導向
+        const meals = {
+            breakfast: [
+                { id: 'b1', name: '燕麥水果碗', icon: '🥣', calories: 320, waste: 0.05, co2: 0.2, tags: ['素食', '高纖'] },
+                { id: 'b2', name: '全麥吐司蛋', icon: '🍳', calories: 380, waste: 0.02, co2: 0.4, tags: ['蛋白質'] },
+                { id: 'b3', name: '隔夜燕麥杯', icon: '🫙', calories: 290, waste: 0, co2: 0.15, tags: ['零廢', '便攜'] },
+                { id: 'b4', name: '蔬菜烘蛋', icon: '🥬', calories: 250, waste: 0.03, co2: 0.25, tags: ['低卡'] },
+                { id: 'b5', name: '豆漿饅頭', icon: '🥟', calories: 340, waste: 0.01, co2: 0.3, tags: ['中式'] },
+                { id: 'b6', name: '果昔碗', icon: '🥗', calories: 280, waste: 0, co2: 0.18, tags: ['生食', '維他命'] }
+            ],
+            lunch: [
+                { id: 'l1', name: '藜麥蔬菜碗', icon: '🥗', calories: 450, waste: 0.05, co2: 0.3, tags: ['素食', '高蛋白'] },
+                { id: 'l2', name: '雞胸糙米飯', icon: '🍗', calories: 520, waste: 0.03, co2: 0.6, tags: ['健身'] },
+                { id: 'l3', name: '扁豆咖喱', icon: '🍛', calories: 480, waste: 0.02, co2: 0.35, tags: ['素食', '香料'] },
+                { id: 'l4', name: '鮭魚藜麥', icon: '🐟', calories: 550, waste: 0.04, co2: 0.8, tags: ['Omega-3'] },
+                { id: 'l5', name: '剩菜炒飯', icon: '🍚', waste: -0.2, calories: 420, co2: 0.25, tags: ['零廢', '省錢'] },
+                { id: 'l6', name: '豆腐蔬菜湯', icon: '🍜', calories: 320, waste: 0.02, co2: 0.2, tags: ['低脂', '暖胃'] }
+            ],
+            dinner: [
+                { id: 'd1', name: '蒸魚配時蔬', icon: '🐟', calories: 380, waste: 0.03, co2: 0.5, tags: ['清淡'] },
+                { id: 'd2', name: '蔬菜豆腐煲', icon: '🍲', calories: 340, waste: 0.02, co2: 0.25, tags: ['素食'] },
+                { id: 'd3', name: '南瓜濃湯', icon: '🎃', calories: 280, waste: 0.01, co2: 0.2, tags: ['低卡', '暖身'] },
+                { id: 'd4', name: '烤蔬菜盤', icon: '🥦', calories: 260, waste: 0.02, co2: 0.15, tags: ['輕食'] },
+                { id: 'd5', name: '味噌湯飯', icon: '🍱', calories: 360, waste: 0.01, co2: 0.3, tags: ['日式'] },
+                { id: 'd6', name: '蔬菜蛋花湯', icon: '🥚', calories: 220, waste: 0.02, co2: 0.22, tags: ['低卡'] }
+            ]
+        };
+
+        const tips = [
+            { icon: '📦', title: '聰明儲存', text: '將香草類放入冰格保存，可延長壽命 3 倍' },
+            { icon: '🥬', title: '醜蔬果也行', text: '外觀不完美但營養相同，購買可減少 30% 食物浪費' },
+            { icon: '🍲', title: '週末清冰箱', text: '每週末用剩菜做創意料理，零浪費又省錢' },
+            { icon: '📋', title: '先規劃後購物', text: '帶清單買菜可減少 20% 衝動購買和浪費' },
+            { icon: '🧊', title: '冷凍保存', text: '即期食材冷凍，營養不流失，浪費歸零' },
+            { icon: '🌿', title: '自己種香草', text: '窗台種羅勒薄荷，隨用隨摘，包裝減半' }
+        ];
+
+        const zeroWasteTips = [
+            '選擇當季食材可減少 40% 碳足跡！',
+            '自備容器購買散裝食品，一年可減少 20kg 包裝垃圾',
+            '將剩菜改造成新菜式，創意又環保',
+            '購買本地食材減少運輸碳排放',
+            '用菜根菜皮熬高湯，零浪費又美味'
+        ];
+
+        let currentDay = 0;
+        const weekPlan = JSON.parse(localStorage.getItem('weekPlan')) || {};
+        const dayNames = ['週一', '週二', '週三', '週四', '週五', '週六', '週日'];
+        let selectedMeals = { breakfast: null, lunch: null, dinner: null };
+
+        function init() {
+            renderDaySelector();
+            renderMealOptions();
+            renderTips();
+            loadDayPlan(0);
+            updateStats();
+        }
+
+        function renderDaySelector() {
+            const container = document.getElementById('day-selector');
+            container.innerHTML = '';
+            
+            dayNames.forEach((day, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'day-btn' + (index === currentDay ? ' active' : '') + (weekPlan[index] ? ' completed' : '');
+                btn.innerHTML = `${day}<br><small>${weekPlan[index] ? '✓' : ''}</small>`;
+                btn.onclick = () => loadDayPlan(index);
+                container.appendChild(btn);
+            });
+        }
+
+        function renderMealOptions() {
+            ['breakfast', 'lunch', 'dinner'].forEach(type => {
+                const container = document.getElementById(`${type}-options`);
+                container.innerHTML = '';
+                
+                meals[type].forEach(meal => {
+                    const div = document.createElement('div');
+                    div.className = 'meal-card' + (selectedMeals[type] === meal.id ? ' selected' : '');
+                    div.onclick = () => selectMeal(type, meal.id);
+                    div.innerHTML = `
+                        <div class="meal-icon">${meal.icon}</div>
+                        <div class="meal-name">${meal.name}</div>
+                        <div class="meal-cal">${meal.calories} kcal</div>
+                        <div class="meal-waste">${meal.waste < 0 ? '♻️ 拯救剩菜' : '🌱 廢棄 ' + meal.waste + 'kg'}</div>
+                    `;
+                    container.appendChild(div);
+                });
+            });
+        }
+
+        function renderTips() {
+            const container = document.getElementById('tips-list');
+            container.innerHTML = tips.map(tip => `
+                <div class="tip-box" style="margin-bottom: 15px;">
+                    <div class="tip-title">${tip.icon} ${tip.title}</div>
+                    <div class="tip-text">${tip.text}</div>
+                </div>
+            `).join('');
+        }
+
+        function loadDayPlan(dayIndex) {
+            currentDay = dayIndex;
+            selectedMeals = weekPlan[dayIndex] || { breakfast: null, lunch: null, dinner: null };
+            
+            // Update UI
+            document.querySelectorAll('.day-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', i === dayIndex);
+            });
+            
+            renderMealOptions();
+            
+            // Random tip
+            document.getElementById('daily-tip').textContent = 
+                zeroWasteTips[Math.floor(Math.random() * zeroWasteTips.length)];
+        }
+
+        function selectMeal(type, mealId) {
+            selectedMeals[type] = selectedMeals[type] === mealId ? null : mealId;
+            renderMealOptions();
+        }
+
+        function saveDayPlan() {
+            if (!selectedMeals.breakfast && !selectedMeals.lunch && !selectedMeals.dinner) {
+                alert('請至少選擇一餐！');
+                return;
+            }
+            
+            weekPlan[currentDay] = { ...selectedMeals };
+            localStorage.setItem('weekPlan', JSON.stringify(weekPlan));
+            
+            renderDaySelector();
+            updateStats();
+            
+            // Show success feedback
+            const btn = document.querySelector('.action-btn');
+            btn.textContent = '✅ 已保存！';
+            setTimeout(() => btn.textContent = '💾 保存今日計劃', 1500);
+        }
+
+        function updateStats() {
+            let totalCalories = 0;
+            let totalWasteSaved = 0;
+            let healthyDays = 0;
+            let totalMeals = 0;
+            let totalCO2 = 0;
+
+            Object.values(weekPlan).forEach(day => {
+                let dayMeals = 0;
+                ['breakfast', 'lunch', 'dinner'].forEach(type => {
+                    if (day[type]) {
+                        const meal = meals[type].find(m => m.id === day[type]);
+                        if (meal) {
+                            totalCalories += meal.calories;
+                            totalWasteSaved += (meal.waste < 0 ? Math.abs(meal.waste) : 0.1 - meal.waste);
+                            totalCO2 += meal.co2;
+                            dayMeals++;
+                            totalMeals++;
+                        }
+                    }
+                });
+                if (dayMeals >= 2) healthyDays++;
+            });
+
+            document.getElementById('weekly-calories').textContent = totalCalories.toLocaleString();
+            document.getElementById('waste-saved').textContent = totalWasteSaved.toFixed(2);
+            document.getElementById('healthy-days').textContent = healthyDays;
+            
+            // Stats page
+            document.getElementById('stat-healthy-meals').textContent = totalMeals + ' 餐';
+            document.getElementById('stat-waste-reduced').textContent = totalWasteSaved.toFixed(2) + ' kg';
+            document.getElementById('stat-co2-saved').textContent = (totalWasteSaved * 2.5).toFixed(1) + ' kg';
+            document.getElementById('stat-money-saved').textContent = '$' + Math.floor(totalWasteSaved * 50);
+
+            updateAchievements(totalMeals, totalWasteSaved, healthyDays);
+        }
+
+        function updateAchievements(meals, waste, days) {
+            const achievements = [];
+            
+            if (meals >= 3) achievements.push({ icon: '🌱', name: '起步者' });
+            if (meals >= 10) achievements.push({ icon: '🥗', name: '健康達人' });
+            if (meals >= 21) achievements.push({ icon: '💪', name: '三週習慣' });
+            if (waste >= 1) achievements.push({ icon: '♻️', name: '零浪費先鋒' });
+            if (waste >= 5) achievements.push({ icon: '🌍', name: '地球守護者' });
+            if (days >= 3) achievements.push({ icon: '🔥', name: '連續健康' });
+            if (days >= 7) achievements.push({ icon: '⭐', name: '完美一週' });
+            
+            const container = document.getElementById('achievements');
+            if (achievements.length === 0) {
+                container.innerHTML = '<p style="color: #9ca3af;">開始規劃飲食解鎖成就！</p>';
+            } else {
+                container.innerHTML = achievements.map(a => 
+                    `<span style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: white; padding: 8px 15px; border-radius: 20px; font-weight: 600;">${a.icon} ${a.name}</span>`
+                ).join('');
+            }
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById(pageId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            
+            if (pageId === 'page-stats') updateStats();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

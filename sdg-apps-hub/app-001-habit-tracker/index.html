@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SDG Habit Tracker - 永續習慣追蹤</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1a5f3f 0%, #2d8a5e 50%, #4ade80 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+        .header h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .sdg-icon { font-size: 3rem; margin-bottom: 10px; }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1a5f3f;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .stat-number { font-size: 2rem; font-weight: 800; }
+        .stat-label { font-size: 0.9rem; opacity: 0.9; }
+        .habit-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f0fdf4;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border-left: 4px solid #22c55e;
+            transition: all 0.3s;
+        }
+        .habit-item:hover { transform: translateX(5px); }
+        .habit-icon { font-size: 1.8rem; margin-right: 15px; }
+        .habit-content { flex: 1; }
+        .habit-title { font-weight: 700; color: #1f2937; }
+        .habit-sdg { font-size: 0.85rem; color: #6b7280; }
+        .check-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid #d1d5db;
+            background: white;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s;
+        }
+        .check-btn:hover { border-color: #22c55e; }
+        .check-btn.completed {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            border-color: #22c55e;
+            color: white;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80 0%, #22c55e 100%);
+            border-radius: 5px;
+            transition: width 0.5s;
+        }
+        .badge-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .badge {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .menu-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #1a5f3f 0%, #2d8a5e 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .section { display: none; }
+        .section.active { display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="sdg-icon">🌍</div>
+            <h1>SDG Habit Tracker</h1>
+            <p>為地球養成永續習慣</p>
+        </div>
+
+        <div id="dashboard" class="section active">
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-number" id="total-checkins">0</div>
+                    <div class="stat-label">總打卡</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="streak-days">0</div>
+                    <div class="stat-label">連續天數</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="eco-points">0</div>
+                    <div class="stat-label">環保積分</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📋 今日永續任務</div>
+                <div id="habit-list"></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="daily-progress" style="width: 0%"></div>
+                </div>
+                <p style="text-align: center; margin-top: 10px; color: #6b7280;">
+                    今日完成度: <span id="progress-text">0%</span>
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🏆 我的成就</div>
+                <div class="badge-container" id="badge-container">
+                    <div class="badge">🌱 初級環保者</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="add-habit" class="section">
+            <div class="card">
+                <div class="card-title">➕ 添加新習慣</div>
+                <div id="sdg-habits"></div>
+                <button class="menu-btn" onclick="showDashboard()">返回儀表板</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sdgHabits = [
+            { id: 1, icon: '💧', title: '節約用水', sdg: 'SDG 6: 潔淨水資源', points: 10 },
+            { id: 2, icon: '♻️', title: '垃圾分類', sdg: 'SDG 12: 責任消費與生產', points: 15 },
+            { id: 3, icon: '🚴', title: '低碳出行', sdg: 'SDG 13: 氣候行動', points: 20 },
+            { id: 4, icon: '🌱', title: '吃素食一餐', sdg: 'SDG 2: 零飢餓', points: 15 },
+            { id: 5, icon: '💡', title: '關閉不必要的電源', sdg: 'SDG 7: 可負擔的潔淨能源', points: 10 },
+            { id: 6, icon: '🛍️', title: '使用環保袋', sdg: 'SDG 12: 責任消費與生產', points: 10 },
+            { id: 7, icon: '📚', title: '學習永續知識', sdg: 'SDG 4: 優質教育', points: 15 },
+            { id: 8, icon: '🌳', title: '種植或照顧植物', sdg: 'SDG 15: 陸域生態', points: 20 }
+        ];
+
+        let myHabits = JSON.parse(localStorage.getItem('myHabits')) || [1, 2, 3];
+        let checkins = JSON.parse(localStorage.getItem('checkins')) || {};
+        let ecoPoints = parseInt(localStorage.getItem('ecoPoints')) || 0;
+
+        function init() {
+            renderHabitList();
+            renderSDGHabits();
+            updateStats();
+        }
+
+        function renderHabitList() {
+            const container = document.getElementById('habit-list');
+            container.innerHTML = '';
+            
+            const today = new Date().toDateString();
+            let completedCount = 0;
+
+            myHabits.forEach(habitId => {
+                const habit = sdgHabits.find(h => h.id === habitId);
+                const isChecked = checkins[today]?.includes(habitId);
+                if (isChecked) completedCount++;
+
+                const div = document.createElement('div');
+                div.className = 'habit-item';
+                div.innerHTML = `
+                    <div class="habit-icon">${habit.icon}</div>
+                    <div class="habit-content">
+                        <div class="habit-title">${habit.title}</div>
+                        <div class="habit-sdg">${habit.sdg} (+${habit.points}分)</div>
+                    </div>
+                    <button class="check-btn ${isChecked ? 'completed' : ''}" onclick="toggleCheckin(${habitId})">
+                        ${isChecked ? '✓' : ''}
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+
+            const progress = myHabits.length > 0 ? (completedCount / myHabits.length * 100) : 0;
+            document.getElementById('daily-progress').style.width = progress + '%';
+            document.getElementById('progress-text').textContent = Math.round(progress) + '%';
+        }
+
+        function renderSDGHabits() {
+            const container = document.getElementById('sdg-habits');
+            container.innerHTML = '';
+
+            sdgHabits.forEach(habit => {
+                const isAdded = myHabits.includes(habit.id);
+                const div = document.createElement('div');
+                div.className = 'habit-item';
+                div.style.opacity = isAdded ? '0.6' : '1';
+                div.innerHTML = `
+                    <div class="habit-icon">${habit.icon}</div>
+                    <div class="habit-content">
+                        <div class="habit-title">${habit.title}</div>
+                        <div class="habit-sdg">${habit.sdg}</div>
+                    </div>
+                    <button class="check-btn" onclick="${isAdded ? 'removeHabit' : 'addHabit'}(${habit.id})" ${isAdded ? 'style="background:#ef4444;color:white"' : ''}>
+                        ${isAdded ? '−' : '+'}
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function toggleCheckin(habitId) {
+            const today = new Date().toDateString();
+            if (!checkins[today]) checkins[today] = [];
+
+            const index = checkins[today].indexOf(habitId);
+            if (index > -1) {
+                checkins[today].splice(index, 1);
+                ecoPoints -= sdgHabits.find(h => h.id === habitId).points;
+            } else {
+                checkins[today].push(habitId);
+                ecoPoints += sdgHabits.find(h => h.id === habitId).points;
+            }
+
+            localStorage.setItem('checkins', JSON.stringify(checkins));
+            localStorage.setItem('ecoPoints', ecoPoints);
+            renderHabitList();
+            updateStats();
+        }
+
+        function addHabit(id) {
+            if (!myHabits.includes(id)) {
+                myHabits.push(id);
+                localStorage.setItem('myHabits', JSON.stringify(myHabits));
+                renderSDGHabits();
+                renderHabitList();
+            }
+        }
+
+        function removeHabit(id) {
+            myHabits = myHabits.filter(h => h !== id);
+            localStorage.setItem('myHabits', JSON.stringify(myHabits));
+            renderSDGHabits();
+            renderHabitList();
+        }
+
+        function updateStats() {
+            const today = new Date().toDateString();
+            const todayCheckins = checkins[today] || [];
+            
+            let total = 0;
+            Object.values(checkins).forEach(day => total += day.length);
+            
+            document.getElementById('total-checkins').textContent = total;
+            document.getElementById('eco-points').textContent = ecoPoints;
+            
+            // Calculate streak
+            let streak = 0;
+            const dates = Object.keys(checkins).sort().reverse();
+            const todayStr = new Date().toISOString().split('T')[0];
+            
+            for (let i = 0; i < dates.length; i++) {
+                const date = new Date(dates[i]);
+                const expectedDate = new Date();
+                expectedDate.setDate(expectedDate.getDate() - i);
+                
+                if (date.toDateString() === expectedDate.toDateString() && checkins[dates[i]].length > 0) {
+                    streak++;
+                } else if (i > 0) {
+                    break;
+                }
+            }
+            document.getElementById('streak-days').textContent = streak;
+
+            // Update badges
+            updateBadges();
+        }
+
+        function updateBadges() {
+            const container = document.getElementById('badge-container');
+            const badges = [];
+            
+            if (ecoPoints >= 100) badges.push('🌿 環保達人');
+            if (ecoPoints >= 500) badges.push('🌳 地球守護者');
+            if (ecoPoints >= 1000) badges.push('🌍 永續大師');
+            if (parseInt(document.getElementById('streak-days').textContent) >= 7) badges.push('🔥 一週連續');
+            if (parseInt(document.getElementById('streak-days').textContent) >= 30) badges.push('⭐ 一個月連續');
+            
+            if (badges.length > 0) {
+                container.innerHTML = badges.map(b => `<div class="badge">${b}</div>`).join('');
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById('add-habit').classList.remove('active');
+            document.getElementById('dashboard').classList.add('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
